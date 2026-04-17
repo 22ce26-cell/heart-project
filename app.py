@@ -4,36 +4,53 @@ import joblib
 
 app = Flask(__name__)
 
+# Load trained model and scaler
 model = joblib.load("heart_model.pkl")
 scaler = joblib.load("scaler.pkl")
+
 
 @app.route("/")
 def home():
     return render_template("index.html")
 
+
 @app.route("/predict", methods=["POST"])
 def predict():
-    data = [float(x) for x in request.form.values()]
-    data = np.array([data])
+    try:
+        # Get form values
+        data = [float(x) for x in request.form.values()]
+        data = np.array([data])
 
-    data = scaler.transform(data)
+        # Scale input
+        data = scaler.transform(data)
 
-    prediction = model.predict(data)[0]
-    probability = model.predict_proba(data)[0][1] * 100
+        # Prediction
+        prediction = model.predict(data)[0]
+        probability = model.predict_proba(data)[0][1] * 100
 
-    if prediction == 1:
-        result = "High Risk"
-        color = "red"
-    else:
-        result = "Low Risk"
-        color = "green"
+        # Result logic
+        if prediction == 1:
+            result = "High Risk"
+            color = "red"
+        else:
+            result = "Low Risk"
+            color = "green"
 
-    return render_template(
-        "index.html",
-        prediction_text=result,
-        probability=round(probability, 2),
-        result_color=color
-    )
+        return render_template(
+            "index.html",
+            prediction_text=result,
+            probability=round(probability, 2),
+            result_color=color
+        )
 
- 
-app.run(debug=True)
+    except Exception as e:
+        return render_template(
+            "index.html",
+            prediction_text="Error in input data",
+            probability=0,
+            result_color="black"
+        )
+
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=10000)
