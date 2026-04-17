@@ -21,7 +21,7 @@ def predict():
     prediction = model.predict(data)[0]
     probability = model.predict_proba(data)[0][1] * 100
 
-        if prediction == 1:
+    if prediction == 1:
         result = "High Risk"
         color = "red"
     else:
